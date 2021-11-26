@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Example page</title>
+  </head>
+  <body>
+    <button>read cache with JS</button>
+    <pre></pre>
+    <script>
+      // not relevant, construct crossorigin host
+      let otherHost = new URL(location);
+      otherHost.port = 8001;
+
+      (async () => {
+        let c = await caches.open('precache');
+        // RELEVANT: this should fail since it has 'vary: *'
+        await c.add(`${otherHost.origin}/bad.css`);
+      })();
+
+      // not relevant
+      document.querySelector('button').addEventListener('click', async () => {
+        let precache = await caches.open('precache');
+        let responses = await precache.matchAll();
+
+        let withSizes = await Promise.all(
+          responses.map(async (r) => {
+            let body = await r.arrayBuffer();
+
+            return {
+              url: r.url,
+              status: r.status,
+              byteSize: body.byteLength,
+            };
+          })
+        );
+
+        document.querySelector('pre').innerText = JSON.stringify(withSizes, null, 2);
+      });
+    </script>
+  </body>
+</html>
