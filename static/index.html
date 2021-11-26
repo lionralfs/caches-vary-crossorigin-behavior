@@ -19,21 +19,24 @@
       otherHost.port = 8001;
 
       (async () => {
-        let c = await caches.open('precache');
+        let c = await caches.open('mycache');
         // RELEVANT: this should fail since it has 'vary: *' and it does
         await c.add(`/example.css`);
       })();
 
       (async () => {
-        let c = await caches.open('precache');
-        // RELEVANT: this should fail since it has 'vary: *' but it doesn't
+        let c = await caches.open('mycache');
+        // add a working response, to demonstrate devtools breaking
+        await c.put('/test', new Response('test'));
+        // RELEVANT: this should fail since it has 'vary: *' but it doesn't. it also breaks devtools, as the '/test' response
+        // doesn't show up under Application > Cache Storage
         await c.add(`${otherHost.origin}/example.css`);
       })();
 
       // not relevant
       document.querySelector('button').addEventListener('click', async () => {
-        let precache = await caches.open('precache');
-        let responses = await precache.matchAll();
+        let c = await caches.open('mycache');
+        let responses = await c.matchAll();
 
         let withSizes = await Promise.all(
           responses.map(async (r) => {
@@ -42,6 +45,7 @@
             return {
               url: r.url,
               status: r.status,
+              type: r.type,
               byteSize: body.byteLength,
             };
           })
