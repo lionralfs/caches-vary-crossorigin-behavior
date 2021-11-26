@@ -6,6 +6,11 @@
     <title>Example page</title>
   </head>
   <body>
+    <p>
+      Check your browser console for errors indicating that `example.css` could not be added to the cache because it has
+      a `Vary: *` header.
+    </p>
+    <p>Use this button retrieve the currently cached entries via JS:</p>
     <button>read cache with JS</button>
     <pre></pre>
     <script>
@@ -15,8 +20,14 @@
 
       (async () => {
         let c = await caches.open('precache');
-        // RELEVANT: this should fail since it has 'vary: *'
-        await c.add(`${otherHost.origin}/bad.css`);
+        // RELEVANT: this should fail since it has 'vary: *' and it does
+        await c.add(`/example.css`);
+      })();
+
+      (async () => {
+        let c = await caches.open('precache');
+        // RELEVANT: this should fail since it has 'vary: *' but it doesn't
+        await c.add(`${otherHost.origin}/example.css`);
       })();
 
       // not relevant

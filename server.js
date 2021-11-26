@@ -1,10 +1,16 @@
 import express from 'express';
 
-// app 1, normal behavior
+// app 1
 let app = express();
-app.use(express.static('./static'));
+app.use(
+  express.static('./static', {
+    setHeaders: (res, path) => {
+      res.setHeader('vary', '*');
+    },
+  })
+);
 
-// app 2, add cors header and 'vary: *'
+// app 2, for cross origin
 let crossOriginApp = express();
 crossOriginApp.use(
   express.static('./static', {
